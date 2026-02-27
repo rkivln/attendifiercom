@@ -33,34 +33,40 @@ const StudentDashboard = () => {
         <h1 className="text-3xl font-display font-bold text-foreground">Student Dashboard</h1>
         <p className="text-muted-foreground mt-1">Welcome back, {user!.name}.</p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          {/* Active Sessions */}
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Active Attendance Sessions</h2>
-            {activeSessions.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Wifi className="h-10 w-10 mb-3 opacity-50" />
-                <p className="text-center">No live sessions found<br />for your campus.</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {activeSessions.map((s) => (
-                  <div key={s.id} className="glass-card p-3 text-sm">
-                    <span className="text-foreground font-medium">{s.subjectCode}</span>
-                    <span className="text-muted-foreground ml-2">Active</span>
+        {/* Active Sessions */}
+        <div className="glass-card p-6 mt-8">
+          <h2 className="text-lg font-display font-bold text-foreground mb-4">Live Sessions</h2>
+          {activeSessions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <Wifi className="h-10 w-10 mb-3 opacity-50" />
+              <p className="text-center">No live sessions right now.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activeSessions.map((s) => {
+                const remaining = Math.max(0, Math.ceil((s.startTime + s.duration * 60 * 1000 - Date.now()) / 60000));
+                return (
+                  <div key={s.id} className="glass-card p-4 flex items-center justify-between">
+                    <div>
+                      <span className="text-foreground font-semibold">{s.subjectCode}</span>
+                      <span className="ml-3 text-xs text-green-400 animate-pulse">● Live</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">{remaining} min left</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
-          {/* Verification Code */}
-          <div className="glass-card p-6">
+        {/* Verification Code - only when sessions are active */}
+        {activeSessions.length > 0 && (
+          <div className="glass-card p-6 mt-6">
             <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2 mb-2">
-              <KeyRound className="h-5 w-5 text-primary" /> Verification Code
+              <KeyRound className="h-5 w-5 text-primary" /> Mark Attendance
             </h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Enter the 8-digit code shared by your teacher to mark attendance for each session.
+              Enter the 8-digit code shared by your teacher to mark attendance.
             </p>
             {message && (
               <p className={`text-sm mb-3 ${message.error ? "text-destructive" : "text-green-400"}`}>{message.text}</p>
@@ -78,7 +84,7 @@ const StudentDashboard = () => {
               </button>
             </form>
           </div>
-        </div>
+        )}
 
         {/* Attendance History */}
         <div className="glass-card p-6 mt-6">
