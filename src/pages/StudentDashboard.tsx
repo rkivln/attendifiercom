@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
@@ -11,13 +11,19 @@ const StudentDashboard = () => {
   const { getActiveSessions, markAttendance, getStudentAttendance } = useAttendance();
   const [code, setCode] = useState("");
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const [, setTick] = useState(0);
 
   const activeSessions = getActiveSessions();
   const myAttendance = getStudentAttendance(user!.id);
 
-  const handleMarkAttendance = (e: React.FormEvent) => {
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMarkAttendance = async (e: React.FormEvent) => {
     e.preventDefault();
-    const error = markAttendance(code, user!.id, user!.name);
+    const error = await markAttendance(code, user!.id, user!.name);
     if (error) {
       setMessage({ text: error, error: true });
     } else {
@@ -44,11 +50,11 @@ const StudentDashboard = () => {
           ) : (
             <div className="space-y-3">
               {activeSessions.map((s) => {
-                const remaining = Math.max(0, Math.ceil((s.startTime + s.duration * 60 * 1000 - Date.now()) / 60000));
+                const remaining = Math.max(0, Math.ceil((new Date(s.start_time).getTime() + s.duration * 60 * 1000 - Date.now()) / 60000));
                 return (
                   <div key={s.id} className="glass-card p-4 flex items-center justify-between">
                     <div>
-                      <span className="text-foreground font-semibold">{s.subjectCode}</span>
+                      <span className="text-foreground font-semibold">{s.subject_code}</span>
                       <span className="ml-3 text-xs text-green-400 animate-pulse">● Live</span>
                     </div>
                     <span className="text-sm text-muted-foreground">{remaining} min left</span>
@@ -72,14 +78,11 @@ const StudentDashboard = () => {
               <p className={`text-sm mb-3 ${message.error ? "text-destructive" : "text-green-400"}`}>{message.text}</p>
             )}
             <form onSubmit={handleMarkAttendance} className="flex gap-3">
-              <input
-                type="text" placeholder="Enter 8-digit code" value={code}
+              <input type="text" placeholder="Enter 8-digit code" value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                className="flex-1 px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+                className="flex-1 px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
               <button type="submit" disabled={code.length !== 8}
-                className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
+                className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50">
                 Submit
               </button>
             </form>
@@ -113,9 +116,9 @@ const StudentDashboard = () => {
                 <tbody>
                   {myAttendance.map((e) => (
                     <tr key={e.id} className="border-b border-border/30">
-                      <td className="py-3 text-foreground">{new Date(e.timestamp).toLocaleString()}</td>
-                      <td className="py-3 text-foreground">{e.subjectCode}</td>
-                      <td className="py-3 text-muted-foreground">{e.ipAddress}</td>
+                      <td className="py-3 text-foreground">{new Date(e.created_at).toLocaleString()}</td>
+                      <td className="py-3 text-foreground">{e.subject_code}</td>
+                      <td className="py-3 text-muted-foreground">{e.ip_address}</td>
                     </tr>
                   ))}
                 </tbody>

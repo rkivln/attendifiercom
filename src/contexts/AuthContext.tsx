@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface User {
   id: string;
@@ -9,9 +11,10 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => boolean;
-  register: (name: string, email: string, password: string, role: "student" | "teacher") => boolean;
-  logout: () => void;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<string | null>;
+  register: (name: string, email: string, password: string, role: "student" | "teacher") => Promise<string | null>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -22,59 +25,73 @@ export const useAuth = () => {
   return ctx;
 };
 
-interface StoredUser extends User {
-  password: string;
-}
+const fetchProfile = async (supabaseUser: SupabaseUser): Promise<User | null> => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", supabaseUser.id)
+    .single();
+  if (!data) return null;
+  return {
+    id: data.user_id,
+    name: data.name,
+    email: data.email,
+    role: data.role as "student" | "teacher",
+  };
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("attendifier_current_user");
-    if (stored) setUser(JSON.parse(stored));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        setTimeout(async () => {
+          const profile = await fetchProfile(session.user);
+          setUser(profile);
+          setLoading(false);
+        }, 0);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const profile = await fetchProfile(session.user);
+        setUser(profile);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const getUsers = (): StoredUser[] => {
-    return JSON.parse(localStorage.getItem("attendifier_users") || "[]");
+  const login = async (email: string, password: string): Promise<string | null> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return error.message;
+    return null;
   };
 
-  const login = (email: string, password: string): boolean => {
-    const users = getUsers();
-    const found = users.find((u) => u.email === email && u.password === password);
-    if (found) {
-      const { password: _, ...userData } = found;
-      setUser(userData);
-      localStorage.setItem("attendifier_current_user", JSON.stringify(userData));
-      return true;
-    }
-    return false;
-  };
-
-  const register = (name: string, email: string, password: string, role: "student" | "teacher"): boolean => {
-    const users = getUsers();
-    if (users.find((u) => u.email === email)) return false;
-    const newUser: StoredUser = {
-      id: crypto.randomUUID(),
-      name,
+  const register = async (name: string, email: string, password: string, role: "student" | "teacher"): Promise<string | null> => {
+    const { error } = await supabase.auth.signUp({
       email,
       password,
-      role,
-    };
-    users.push(newUser);
-    localStorage.setItem("attendifier_users", JSON.stringify(users));
-    const { password: _, ...userData } = newUser;
-    setUser(userData);
-    localStorage.setItem("attendifier_current_user", JSON.stringify(userData));
-    return true;
+      options: { data: { name, role } },
+    });
+    if (error) return error.message;
+    return null;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("attendifier_current_user");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

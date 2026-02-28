@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AttendanceProvider } from "@/contexts/AttendanceContext";
+import Index from "./pages/Index";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
@@ -14,15 +15,17 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, role }: { children: React.ReactNode; role: "student" | "teacher" }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen gradient-bg flex items-center justify-center text-foreground">Loading...</div>;
   if (!user) return <Navigate to="/login" />;
   if (user.role !== role) return <Navigate to={user.role === "teacher" ? "/teacher" : "/student"} />;
   return <>{children}</>;
 };
 
 const HomeRedirect = () => {
-  const { user } = useAuth();
-  if (!user) return <Navigate to="/login" />;
+  const { user, loading } = useAuth();
+  if (loading) return <div className="min-h-screen gradient-bg flex items-center justify-center text-foreground">Loading...</div>;
+  if (!user) return <Index />;
   return <Navigate to={user.role === "teacher" ? "/teacher" : "/student"} />;
 };
 
