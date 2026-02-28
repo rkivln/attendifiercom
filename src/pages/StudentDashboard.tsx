@@ -4,13 +4,13 @@ import { useAttendance } from "@/contexts/AttendanceContext";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Wifi, KeyRound } from "lucide-react";
+import { Wifi } from "lucide-react";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { getActiveSessions, markAttendance, getStudentAttendance } = useAttendance();
-  const [code, setCode] = useState("");
-  const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const { getActiveSessions, markAttendance, getStudentAttendance, subjects } = useAttendance();
+  const [codes, setCodes] = useState<Record<string, string>>({});
+  const [messages, setMessages] = useState<Record<string, { text: string; error: boolean }>>({});
   const [, setTick] = useState(0);
 
   const activeSessions = getActiveSessions();
@@ -21,15 +21,28 @@ const StudentDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleMarkAttendance = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const error = await markAttendance(code, user!.id, user!.name);
+  const getSubjectName = (code: string) => {
+    const sub = subjects.find((s) => s.code === code);
+    return sub ? sub.name : "";
+  };
+
+  const handleMark = async (sessionId: string, verificationCode: string) => {
+    if (!verificationCode || verificationCode.length !== 8) return;
+    const error = await markAttendance(verificationCode, user!.id, user!.name);
     if (error) {
-      setMessage({ text: error, error: true });
+      setMessages((m) => ({ ...m, [sessionId]: { text: error, error: true } }));
     } else {
-      setMessage({ text: "Attendance marked successfully!", error: false });
-      setCode("");
+      setMessages((m) => ({ ...m, [sessionId]: { text: "Marked!", error: false } }));
+      setCodes((c) => ({ ...c, [sessionId]: "" }));
     }
+  };
+
+  const getRemainingTime = (s: { start_time: string; duration: number }) => {
+    const end = new Date(s.start_time).getTime() + s.duration * 60 * 1000;
+    const diff = Math.max(0, end - Date.now());
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    return `${mins}m ${secs}s`;
   };
 
   return (
@@ -39,55 +52,54 @@ const StudentDashboard = () => {
         <h1 className="text-3xl font-display font-bold text-foreground">Student Dashboard</h1>
         <p className="text-muted-foreground mt-1">Welcome back, {user!.name}.</p>
 
-        {/* Active Sessions */}
+        {/* Active Sessions with inline code entry */}
         <div className="glass-card p-6 mt-8">
-          <h2 className="text-lg font-display font-bold text-foreground mb-4">Live Sessions</h2>
+          <h2 className="text-lg font-display font-bold text-foreground mb-4">Active Attendance Sessions</h2>
           {activeSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Wifi className="h-10 w-10 mb-3 opacity-50" />
-              <p className="text-center">No live sessions right now.</p>
+              <p className="text-center">No active sessions right now.</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {activeSessions.map((s) => {
-                const remaining = Math.max(0, Math.ceil((new Date(s.start_time).getTime() + s.duration * 60 * 1000 - Date.now()) / 60000));
+                const subName = getSubjectName(s.subject_code);
+                const label = subName ? `${s.subject_code} (${subName})` : s.subject_code;
                 return (
-                  <div key={s.id} className="glass-card p-4 flex items-center justify-between">
+                  <div key={s.id} className="glass-card p-5 space-y-3">
                     <div>
-                      <span className="text-foreground font-semibold">{s.subject_code}</span>
-                      <span className="ml-3 text-xs text-green-400 animate-pulse">● Live</span>
+                      <span className="text-foreground font-semibold text-base">{label}</span>
+                      <p className="text-sm text-muted-foreground mt-0.5">Ends in: {getRemainingTime(s)}</p>
                     </div>
-                    <span className="text-sm text-muted-foreground">{remaining} min left</span>
+                    {messages[s.id] && (
+                      <p className={`text-sm ${messages[s.id].error ? "text-destructive" : "text-green-400"}`}>
+                        {messages[s.id].text}
+                      </p>
+                    )}
+                    <div className="flex gap-3 items-center">
+                      <input
+                        type="text"
+                        placeholder="8-digit code"
+                        value={codes[s.id] || ""}
+                        onChange={(e) =>
+                          setCodes((c) => ({ ...c, [s.id]: e.target.value.replace(/\D/g, "").slice(0, 8) }))
+                        }
+                        className="flex-1 px-4 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                      />
+                      <button
+                        onClick={() => handleMark(s.id, codes[s.id] || "")}
+                        disabled={(codes[s.id] || "").length !== 8}
+                        className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm whitespace-nowrap"
+                      >
+                        Mark Present
+                      </button>
+                    </div>
                   </div>
                 );
               })}
             </div>
           )}
         </div>
-
-        {/* Verification Code - only when sessions are active */}
-        {activeSessions.length > 0 && (
-          <div className="glass-card p-6 mt-6">
-            <h2 className="text-lg font-display font-bold text-foreground flex items-center gap-2 mb-2">
-              <KeyRound className="h-5 w-5 text-primary" /> Mark Attendance
-            </h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Enter the 8-digit code shared by your teacher to mark attendance.
-            </p>
-            {message && (
-              <p className={`text-sm mb-3 ${message.error ? "text-destructive" : "text-green-400"}`}>{message.text}</p>
-            )}
-            <form onSubmit={handleMarkAttendance} className="flex gap-3">
-              <input type="text" placeholder="Enter 8-digit code" value={code}
-                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                className="flex-1 px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              <button type="submit" disabled={code.length !== 8}
-                className="px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50">
-                Submit
-              </button>
-            </form>
-          </div>
-        )}
 
         {/* Attendance History */}
         <div className="glass-card p-6 mt-6">
