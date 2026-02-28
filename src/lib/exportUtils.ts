@@ -4,7 +4,7 @@ import { saveAs } from "file-saver";
 export const exportToCSV = (entries: AttendanceEntry[], filename: string) => {
   const header = "Date & Time,Subject,Student Name,IP Address\n";
   const rows = entries
-    .map((e) => `"${new Date(e.timestamp).toLocaleString()}","${e.subjectCode}","${e.studentName}","${e.ipAddress}"`)
+    .map((e) => `"${new Date(e.created_at).toLocaleString()}","${e.subject_code}","${e.student_name}","${e.ip_address}"`)
     .join("\n");
   const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
   saveAs(blob, `${filename}.csv`);
@@ -15,7 +15,7 @@ export const exportToWord = (entries: AttendanceEntry[], filename: string) => {
   html += `<h2>Attendance Report - ${filename}</h2>`;
   html += `<table><tr><th>Date & Time</th><th>Subject</th><th>Student Name</th><th>IP Address</th></tr>`;
   entries.forEach((e) => {
-    html += `<tr><td>${new Date(e.timestamp).toLocaleString()}</td><td>${e.subjectCode}</td><td>${e.studentName}</td><td>${e.ipAddress}</td></tr>`;
+    html += `<tr><td>${new Date(e.created_at).toLocaleString()}</td><td>${e.subject_code}</td><td>${e.student_name}</td><td>${e.ip_address}</td></tr>`;
   });
   html += `</table></body></html>`;
   const blob = new Blob([html], { type: "application/msword" });
@@ -26,7 +26,7 @@ export const exportToExcel = (entries: AttendanceEntry[], filename: string) => {
   let html = `<html><head><meta charset="utf-8"></head><body><table>`;
   html += `<tr><th>Date & Time</th><th>Subject</th><th>Student Name</th><th>IP Address</th></tr>`;
   entries.forEach((e) => {
-    html += `<tr><td>${new Date(e.timestamp).toLocaleString()}</td><td>${e.subjectCode}</td><td>${e.studentName}</td><td>${e.ipAddress}</td></tr>`;
+    html += `<tr><td>${new Date(e.created_at).toLocaleString()}</td><td>${e.subject_code}</td><td>${e.student_name}</td><td>${e.ip_address}</td></tr>`;
   });
   html += `</table></body></html>`;
   const blob = new Blob([html], { type: "application/vnd.ms-excel" });

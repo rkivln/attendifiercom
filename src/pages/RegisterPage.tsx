@@ -10,17 +10,20 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<"student" | "teacher">("student");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const success = register(name, email, password, role);
-    if (success) {
-      navigate(role === "teacher" ? "/teacher" : "/student");
+    setLoading(true);
+    const err = await register(name, email, password, role);
+    setLoading(false);
+    if (err) {
+      setError(err);
     } else {
-      setError("Email already registered.");
+      navigate("/");
     }
   };
 
@@ -34,58 +37,34 @@ const RegisterPage = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm text-muted-foreground mb-2">Full Name</label>
-              <input
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+              <input type="text" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required
+                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
             </div>
             <div>
               <label className="block text-sm text-muted-foreground mb-2">Email Address</label>
-              <input
-                type="email"
-                placeholder="name@college.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+              <input type="email" placeholder="name@college.edu" value={email} onChange={(e) => setEmail(e.target.value)} required
+                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
             </div>
             <div>
               <label className="block text-sm text-muted-foreground mb-2">Password</label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+              <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
             </div>
             <div>
               <label className="block text-sm text-muted-foreground mb-2">Role</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as "student" | "teacher")}
-                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              >
+              <select value={role} onChange={(e) => setRole(e.target.value as "student" | "teacher")}
+                className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
                 <option value="student">Student</option>
                 <option value="teacher">Teacher</option>
               </select>
             </div>
-            <button
-              type="submit"
-              className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
-            >
-              Create Account
+            <button type="submit" disabled={loading}
+              className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50">
+              {loading ? "Creating account..." : "Create Account"}
             </button>
           </form>
           <p className="text-center mt-6 text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary hover:underline">Login here</Link>
+            Already have an account? <Link to="/login" className="text-primary hover:underline">Login here</Link>
           </p>
         </div>
       </main>

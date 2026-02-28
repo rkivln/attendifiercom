@@ -14,7 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attendance_entries: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          session_id: string
+          student_id: string
+          student_name: string
+          subject_code: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          session_id: string
+          student_id: string
+          student_name: string
+          subject_code: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          session_id?: string
+          student_id?: string
+          student_name?: string
+          subject_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_entries_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          active: boolean
+          created_at: string
+          duration: number
+          id: string
+          start_time: string
+          subject_code: string
+          teacher_id: string
+          verification_code: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          duration: number
+          id?: string
+          start_time?: string
+          subject_code: string
+          teacher_id: string
+          verification_code: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          duration?: number
+          id?: string
+          start_time?: string
+          subject_code?: string
+          teacher_id?: string
+          verification_code?: string
+        }
+        Relationships: []
+      }
+      subjects: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          teacher_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          teacher_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          teacher_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

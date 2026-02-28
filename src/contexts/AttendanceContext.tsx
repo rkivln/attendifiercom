@@ -1,45 +1,47 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface Subject {
   id: string;
   code: string;
   name: string;
-  teacherId: string;
+  teacher_id: string;
 }
 
 export interface Session {
   id: string;
-  subjectCode: string;
-  verificationCode: string;
-  startTime: number;
-  duration: number; // minutes
-  teacherId: string;
+  subject_code: string;
+  verification_code: string;
+  start_time: string;
+  duration: number;
+  teacher_id: string;
   active: boolean;
 }
 
 export interface AttendanceEntry {
   id: string;
-  sessionId: string;
-  studentId: string;
-  studentName: string;
-  subjectCode: string;
-  timestamp: number;
-  ipAddress: string;
+  session_id: string;
+  student_id: string;
+  student_name: string;
+  subject_code: string;
+  created_at: string;
+  ip_address: string;
 }
 
 interface AttendanceContextType {
   subjects: Subject[];
   sessions: Session[];
   attendanceEntries: AttendanceEntry[];
-  addSubject: (code: string, name: string, teacherId: string) => void;
-  deleteSubject: (id: string) => void;
-  startSession: (subjectCode: string, duration: number, verificationCode: string, teacherId: string) => void;
-  markAttendance: (verificationCode: string, studentId: string, studentName: string) => string | null;
+  addSubject: (code: string, name: string, teacherId: string) => Promise<void>;
+  deleteSubject: (id: string) => Promise<void>;
+  startSession: (subjectCode: string, duration: number, verificationCode: string, teacherId: string) => Promise<void>;
+  markAttendance: (verificationCode: string, studentId: string, studentName: string) => Promise<string | null>;
   getTeacherSubjects: (teacherId: string) => Subject[];
   getActiveSessions: () => Session[];
   getTeacherSessions: (teacherId: string) => Session[];
   getStudentAttendance: (studentId: string) => AttendanceEntry[];
   getSessionAttendance: (sessionId: string) => AttendanceEntry[];
+  refreshData: () => Promise<void>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | null>(null);
@@ -50,95 +52,100 @@ export const useAttendance = () => {
   return ctx;
 };
 
-export const AttendanceProvider = ({ children }: { children: ReactNode }) => {
-  const [subjects, setSubjects] = useState<Subject[]>(() =>
-    JSON.parse(localStorage.getItem("attendifier_subjects") || "[]")
-  );
-  const [sessions, setSessions] = useState<Session[]>(() =>
-    JSON.parse(localStorage.getItem("attendifier_sessions") || "[]")
-  );
-  const [attendanceEntries, setAttendanceEntries] = useState<AttendanceEntry[]>(() =>
-    JSON.parse(localStorage.getItem("attendifier_attendance") || "[]")
-  );
+const isSessionActive = (session: { start_time: string; duration: number; active: boolean }) => {
+  if (!session.active) return false;
+  const endTime = new Date(session.start_time).getTime() + session.duration * 60 * 1000;
+  return Date.now() < endTime;
+};
 
-  // Check expired sessions every second
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSessions((prev) => {
-        const updated = prev.map((s) => {
-          if (s.active && Date.now() > s.startTime + s.duration * 60 * 1000) {
-            return { ...s, active: false };
-          }
-          return s;
-        });
-        if (JSON.stringify(updated) !== JSON.stringify(prev)) {
-          localStorage.setItem("attendifier_sessions", JSON.stringify(updated));
-        }
-        return updated;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
+export const AttendanceProvider = ({ children }: { children: ReactNode }) => {
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [attendanceEntries, setAttendanceEntries] = useState<AttendanceEntry[]>([]);
+
+  const fetchAll = useCallback(async () => {
+    const [subRes, sesRes, attRes] = await Promise.all([
+      supabase.from("subjects").select("*"),
+      supabase.from("sessions").select("*"),
+      supabase.from("attendance_entries").select("*"),
+    ]);
+    if (subRes.data) setSubjects(subRes.data as Subject[]);
+    if (sesRes.data) setSessions(sesRes.data as Session[]);
+    if (attRes.data) setAttendanceEntries(attRes.data as AttendanceEntry[]);
   }, []);
 
-  const persist = (key: string, data: unknown) => localStorage.setItem(key, JSON.stringify(data));
+  useEffect(() => {
+    fetchAll();
 
-  const addSubject = (code: string, name: string, teacherId: string) => {
-    const newSubject: Subject = { id: crypto.randomUUID(), code, name, teacherId };
-    const updated = [...subjects, newSubject];
-    setSubjects(updated);
-    persist("attendifier_subjects", updated);
+    const channel = supabase
+      .channel("attendance_realtime")
+      .on("postgres_changes", { event: "*", schema: "public", table: "sessions" }, () => fetchAll())
+      .on("postgres_changes", { event: "*", schema: "public", table: "attendance_entries" }, () => fetchAll())
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchAll]);
+
+  // Check for expired sessions every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const expired = sessions.filter(
+        (s) => s.active && !isSessionActive(s)
+      );
+      for (const s of expired) {
+        await supabase.from("sessions").update({ active: false }).eq("id", s.id);
+      }
+      if (expired.length > 0) fetchAll();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [sessions, fetchAll]);
+
+  const addSubject = async (code: string, name: string, teacherId: string) => {
+    await supabase.from("subjects").insert({ code, name, teacher_id: teacherId });
+    await fetchAll();
   };
 
-  const deleteSubject = (id: string) => {
-    const updated = subjects.filter((s) => s.id !== id);
-    setSubjects(updated);
-    persist("attendifier_subjects", updated);
+  const deleteSubject = async (id: string) => {
+    await supabase.from("subjects").delete().eq("id", id);
+    await fetchAll();
   };
 
-  const startSession = (subjectCode: string, duration: number, verificationCode: string, teacherId: string) => {
-    const newSession: Session = {
-      id: crypto.randomUUID(),
-      subjectCode,
-      verificationCode,
-      startTime: Date.now(),
+  const startSession = async (subjectCode: string, duration: number, verificationCode: string, teacherId: string) => {
+    await supabase.from("sessions").insert({
+      subject_code: subjectCode,
+      verification_code: verificationCode,
       duration,
-      teacherId,
+      teacher_id: teacherId,
       active: true,
-    };
-    const updated = [...sessions, newSession];
-    setSessions(updated);
-    persist("attendifier_sessions", updated);
+    });
+    await fetchAll();
   };
 
-  const markAttendance = (verificationCode: string, studentId: string, studentName: string): string | null => {
-    const session = sessions.find((s) => s.active && s.verificationCode === verificationCode);
+  const markAttendance = async (verificationCode: string, studentId: string, studentName: string): Promise<string | null> => {
+    const session = sessions.find((s) => isSessionActive(s) && s.verification_code === verificationCode);
     if (!session) return "Invalid or expired verification code.";
 
     const alreadyMarked = attendanceEntries.find(
-      (e) => e.sessionId === session.id && e.studentId === studentId
+      (e) => e.session_id === session.id && e.student_id === studentId
     );
     if (alreadyMarked) return "Attendance already marked for this session.";
 
-    const entry: AttendanceEntry = {
-      id: crypto.randomUUID(),
-      sessionId: session.id,
-      studentId,
-      studentName,
-      subjectCode: session.subjectCode,
-      timestamp: Date.now(),
-      ipAddress: "127.0.0.1",
-    };
-    const updated = [...attendanceEntries, entry];
-    setAttendanceEntries(updated);
-    persist("attendifier_attendance", updated);
+    const { error } = await supabase.from("attendance_entries").insert({
+      session_id: session.id,
+      student_id: studentId,
+      student_name: studentName,
+      subject_code: session.subject_code,
+    });
+    if (error) return error.message;
+    await fetchAll();
     return null;
   };
 
-  const getTeacherSubjects = (teacherId: string) => subjects.filter((s) => s.teacherId === teacherId);
-  const getActiveSessions = () => sessions.filter((s) => s.active);
-  const getTeacherSessions = (teacherId: string) => sessions.filter((s) => s.teacherId === teacherId && s.active);
-  const getStudentAttendance = (studentId: string) => attendanceEntries.filter((e) => e.studentId === studentId);
-  const getSessionAttendance = (sessionId: string) => attendanceEntries.filter((e) => e.sessionId === sessionId);
+  const getTeacherSubjects = (teacherId: string) => subjects.filter((s) => s.teacher_id === teacherId);
+  const getActiveSessions = () => sessions.filter(isSessionActive);
+  const getTeacherSessions = (teacherId: string) => sessions.filter((s) => s.teacher_id === teacherId && isSessionActive(s));
+  const getStudentAttendance = (studentId: string) => attendanceEntries.filter((e) => e.student_id === studentId);
+  const getSessionAttendance = (sessionId: string) => attendanceEntries.filter((e) => e.session_id === sessionId);
 
   return (
     <AttendanceContext.Provider
@@ -146,7 +153,7 @@ export const AttendanceProvider = ({ children }: { children: ReactNode }) => {
         subjects, sessions, attendanceEntries,
         addSubject, deleteSubject, startSession, markAttendance,
         getTeacherSubjects, getActiveSessions, getTeacherSessions,
-        getStudentAttendance, getSessionAttendance,
+        getStudentAttendance, getSessionAttendance, refreshData: fetchAll,
       }}
     >
       {children}
