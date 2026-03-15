@@ -9,13 +9,27 @@ import { Wifi, BarChart3 } from "lucide-react";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { getActiveSessions, markAttendance, getStudentAttendance, subjects } = useAttendance();
+  const { getActiveSessions, markAttendance, getStudentAttendance, subjects, sessions } = useAttendance();
   const [codes, setCodes] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<Record<string, { text: string; error: boolean }>>({});
   const [, setTick] = useState(0);
 
   const activeSessions = getActiveSessions();
   const myAttendance = getStudentAttendance(user!.id);
+
+  const subjectStats = useMemo(() => {
+    const allSubjectCodes = new Set([
+      ...sessions.map((s) => s.subject_code),
+      ...myAttendance.map((a) => a.subject_code),
+    ]);
+    return Array.from(allSubjectCodes).map((code) => {
+      const totalSessions = sessions.filter((s) => s.subject_code === code).length;
+      const attended = myAttendance.filter((a) => a.subject_code === code).length;
+      const percentage = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : 0;
+      const sub = subjects.find((s) => s.code === code);
+      return { code, name: sub?.name || code, totalSessions, attended, percentage };
+    });
+  }, [sessions, myAttendance, subjects]);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
