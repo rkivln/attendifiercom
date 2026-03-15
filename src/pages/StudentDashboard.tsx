@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Wifi } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Wifi, BarChart3 } from "lucide-react";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
