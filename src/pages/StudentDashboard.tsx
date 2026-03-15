@@ -116,6 +116,29 @@ const StudentDashboard = () => {
           )}
         </div>
 
+        {/* Attendance Stats Per Subject */}
+        <div className="glass-card p-6 mt-6">
+          <h2 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Attendance Stats by Subject
+          </h2>
+          {subjectStats.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No data yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {subjectStats.map((stat) => (
+                <div key={stat.code} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-foreground font-medium">{stat.name} <span className="text-muted-foreground">({stat.code})</span></span>
+                    <span className="text-muted-foreground">{stat.attended}/{stat.totalSessions} sessions — <span className={stat.percentage >= 75 ? "text-green-400" : stat.percentage >= 50 ? "text-yellow-400" : "text-destructive"}>{stat.percentage}%</span></span>
+                  </div>
+                  <Progress value={stat.percentage} className="h-2" />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Attendance History */}
         <div className="glass-card p-6 mt-6">
           <div className="flex items-center justify-between mb-4">
