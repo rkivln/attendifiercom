@@ -1,20 +1,35 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Wifi } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Wifi, BarChart3 } from "lucide-react";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { getActiveSessions, markAttendance, getStudentAttendance, subjects } = useAttendance();
+  const { getActiveSessions, markAttendance, getStudentAttendance, subjects, sessions } = useAttendance();
   const [codes, setCodes] = useState<Record<string, string>>({});
   const [messages, setMessages] = useState<Record<string, { text: string; error: boolean }>>({});
   const [, setTick] = useState(0);
 
   const activeSessions = getActiveSessions();
   const myAttendance = getStudentAttendance(user!.id);
+
+  const subjectStats = useMemo(() => {
+    const allSubjectCodes = new Set([
+      ...sessions.map((s) => s.subject_code),
+      ...myAttendance.map((a) => a.subject_code),
+    ]);
+    return Array.from(allSubjectCodes).map((code) => {
+      const totalSessions = sessions.filter((s) => s.subject_code === code).length;
+      const attended = myAttendance.filter((a) => a.subject_code === code).length;
+      const percentage = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : 0;
+      const sub = subjects.find((s) => s.code === code);
+      return { code, name: sub?.name || code, totalSessions, attended, percentage };
+    });
+  }, [sessions, myAttendance, subjects]);
 
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
@@ -97,6 +112,29 @@ const StudentDashboard = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Attendance Stats Per Subject */}
+        <div className="glass-card p-6 mt-6">
+          <h2 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            Attendance Stats by Subject
+          </h2>
+          {subjectStats.length === 0 ? (
+            <p className="text-muted-foreground text-sm">No data yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {subjectStats.map((stat) => (
+                <div key={stat.code} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-foreground font-medium">{stat.name} <span className="text-muted-foreground">({stat.code})</span></span>
+                    <span className="text-muted-foreground">{stat.attended}/{stat.totalSessions} sessions — <span className={stat.percentage >= 75 ? "text-green-400" : stat.percentage >= 50 ? "text-yellow-400" : "text-destructive"}>{stat.percentage}%</span></span>
+                  </div>
+                  <Progress value={stat.percentage} className="h-2" />
+                </div>
+              ))}
             </div>
           )}
         </div>
