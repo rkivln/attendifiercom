@@ -2,10 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Progress } from "@/components/ui/progress";
-import { Wifi, BarChart3 } from "lucide-react";
+import { Wifi, BarChart3, Download, FileText } from "lucide-react";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -61,37 +60,40 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex flex-col">
-      <Navbar />
-      <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
-        <h1 className="text-3xl font-display font-bold text-foreground">Student Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back, {user!.name}.</p>
-
-        {/* Active Sessions with inline code entry */}
-        <div className="glass-card p-6 mt-8">
-          <h2 className="text-lg font-display font-bold text-foreground mb-4">Active Attendance Sessions</h2>
+    <DashboardLayout title="Student Dashboard" subtitle={`Welcome back, ${user!.name}`}>
+      <div className="space-y-6">
+        {/* Active Sessions */}
+        <div className="content-card">
+          <h2 className="text-base font-display font-bold text-foreground mb-4">Active Sessions</h2>
           {activeSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <Wifi className="h-10 w-10 mb-3 opacity-50" />
-              <p className="text-center">No active sessions right now.</p>
+              <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                <Wifi className="h-6 w-6" />
+              </div>
+              <p className="text-sm">No active sessions right now.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {activeSessions.map((s) => {
                 const subName = getSubjectName(s.subject_code);
-                const label = subName ? `${s.subject_code} (${subName})` : s.subject_code;
+                const label = subName ? `${s.subject_code} — ${subName}` : s.subject_code;
                 return (
-                  <div key={s.id} className="glass-card p-5 space-y-3">
-                    <div>
-                      <span className="text-foreground font-semibold text-base">{label}</span>
-                      <p className="text-sm text-muted-foreground mt-0.5">Ends in: {getRemainingTime(s)}</p>
+                  <div key={s.id} className="rounded-2xl border border-border bg-background p-5 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <span className="text-foreground font-semibold text-sm">{label}</span>
+                        <p className="text-xs text-muted-foreground mt-0.5">Ends in {getRemainingTime(s)}</p>
+                      </div>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                        Live
+                      </span>
                     </div>
                     {messages[s.id] && (
-                      <p className={`text-sm ${messages[s.id].error ? "text-destructive" : "text-green-400"}`}>
+                      <p className={`text-xs rounded-lg px-3 py-1.5 ${messages[s.id].error ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
                         {messages[s.id].text}
                       </p>
                     )}
-                    <div className="flex gap-3 items-center">
+                    <div className="flex gap-2 items-center">
                       <input
                         type="text"
                         placeholder="8-digit code"
@@ -99,12 +101,12 @@ const StudentDashboard = () => {
                         onChange={(e) =>
                           setCodes((c) => ({ ...c, [s.id]: e.target.value.replace(/\D/g, "").slice(0, 8) }))
                         }
-                        className="flex-1 px-4 py-2.5 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
+                        className="input-field flex-1 !py-2.5"
                       />
                       <button
                         onClick={() => handleMark(s.id, codes[s.id] || "")}
                         disabled={(codes[s.id] || "").length !== 8}
-                        className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 text-sm whitespace-nowrap"
+                        className="btn-primary !py-2.5 whitespace-nowrap disabled:opacity-40"
                       >
                         Mark Present
                       </button>
@@ -116,11 +118,11 @@ const StudentDashboard = () => {
           )}
         </div>
 
-        {/* Attendance Stats Per Subject */}
-        <div className="glass-card p-6 mt-6">
-          <h2 className="text-lg font-display font-bold text-foreground mb-4 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" />
-            Attendance Stats by Subject
+        {/* Stats */}
+        <div className="content-card">
+          <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-primary" />
+            Attendance Stats
           </h2>
           {subjectStats.length === 0 ? (
             <p className="text-muted-foreground text-sm">No data yet.</p>
@@ -130,7 +132,12 @@ const StudentDashboard = () => {
                 <div key={stat.code} className="space-y-1.5">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-foreground font-medium">{stat.name} <span className="text-muted-foreground">({stat.code})</span></span>
-                    <span className="text-muted-foreground">{stat.attended}/{stat.totalSessions} sessions — <span className={stat.percentage >= 75 ? "text-green-400" : stat.percentage >= 50 ? "text-yellow-400" : "text-destructive"}>{stat.percentage}%</span></span>
+                    <span className="text-muted-foreground text-xs">
+                      {stat.attended}/{stat.totalSessions} —{" "}
+                      <span className={stat.percentage >= 75 ? "text-primary font-semibold" : stat.percentage >= 50 ? "text-warning font-semibold" : "text-destructive font-semibold"}>
+                        {stat.percentage}%
+                      </span>
+                    </span>
                   </div>
                   <Progress value={stat.percentage} className="h-2" />
                 </div>
@@ -139,15 +146,18 @@ const StudentDashboard = () => {
           )}
         </div>
 
-        {/* Attendance History */}
-        <div className="glass-card p-6 mt-6">
+        {/* History */}
+        <div className="content-card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-display font-bold text-foreground">Attendance History</h2>
+            <h2 className="text-base font-display font-bold text-foreground flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              Attendance History
+            </h2>
             {myAttendance.length > 0 && (
               <div className="flex gap-2">
-                <button onClick={() => exportToCSV(myAttendance, "my_attendance")} className="px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">CSV</button>
-                <button onClick={() => exportToExcel(myAttendance, "my_attendance")} className="px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">Excel</button>
-                <button onClick={() => exportToWord(myAttendance, "my_attendance")} className="px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">Word</button>
+                <button onClick={() => exportToCSV(myAttendance, "my_attendance")} className="btn-outline text-xs !px-3 !py-1.5">CSV</button>
+                <button onClick={() => exportToExcel(myAttendance, "my_attendance")} className="btn-outline text-xs !px-3 !py-1.5">Excel</button>
+                <button onClick={() => exportToWord(myAttendance, "my_attendance")} className="btn-outline text-xs !px-3 !py-1.5">Word</button>
               </div>
             )}
           </div>
@@ -158,17 +168,17 @@ const StudentDashboard = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-muted-foreground border-b border-border">
-                    <th className="text-left py-2">Date & Time</th>
-                    <th className="text-left py-2">Subject</th>
-                    <th className="text-left py-2">IP Address</th>
+                    <th className="text-left py-2.5 font-medium text-xs">Date & Time</th>
+                    <th className="text-left py-2.5 font-medium text-xs">Subject</th>
+                    <th className="text-left py-2.5 font-medium text-xs">IP Address</th>
                   </tr>
                 </thead>
                 <tbody>
                   {myAttendance.map((e) => (
-                    <tr key={e.id} className="border-b border-border/30">
-                      <td className="py-3 text-foreground">{new Date(e.created_at).toLocaleString()}</td>
-                      <td className="py-3 text-foreground">{e.subject_code}</td>
-                      <td className="py-3 text-muted-foreground">{e.ip_address}</td>
+                    <tr key={e.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                      <td className="py-3 text-foreground text-sm">{new Date(e.created_at).toLocaleString()}</td>
+                      <td className="py-3 text-foreground text-sm">{e.subject_code}</td>
+                      <td className="py-3 text-muted-foreground text-sm">{e.ip_address}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -176,9 +186,8 @@ const StudentDashboard = () => {
             </div>
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

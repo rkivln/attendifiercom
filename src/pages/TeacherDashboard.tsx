@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAttendance } from "@/contexts/AttendanceContext";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Clock, Trash2, FileSpreadsheet } from "lucide-react";
+import DashboardLayout from "@/components/DashboardLayout";
+import { Clock, Trash2, FileSpreadsheet, BookOpen, Play, Download } from "lucide-react";
 
 const TeacherDashboard = () => {
   const { user } = useAuth();
@@ -54,82 +53,71 @@ const TeacherDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-bg flex flex-col">
-      <Navbar />
-      <main className="flex-1 px-6 py-8 max-w-7xl mx-auto w-full">
-        <h1 className="text-3xl font-display font-bold text-foreground mb-2">Teacher Dashboard</h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+    <DashboardLayout title="Teacher Dashboard" subtitle={`Manage your classes`}>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Create Subject */}
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Create Subject</h2>
-            <form onSubmit={handleAddSubject} className="space-y-4">
+          <div className="content-card">
+            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              Create Subject
+            </h2>
+            <form onSubmit={handleAddSubject} className="space-y-3">
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Subject Code</label>
-                <input type="text" placeholder="CS101" value={subjectCode} onChange={(e) => setSubjectCode(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                <label className="block text-sm font-medium text-foreground mb-1.5">Subject Code</label>
+                <input type="text" placeholder="CS101" value={subjectCode} onChange={(e) => setSubjectCode(e.target.value)} className="input-field" />
               </div>
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Subject Name</label>
-                <input type="text" placeholder="Data Structures" value={subjectName} onChange={(e) => setSubjectName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                <label className="block text-sm font-medium text-foreground mb-1.5">Subject Name</label>
+                <input type="text" placeholder="Data Structures" value={subjectName} onChange={(e) => setSubjectName(e.target.value)} className="input-field" />
               </div>
-              <button type="submit" className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors">
-                Add Subject
-              </button>
+              <button type="submit" className="btn-primary w-full">Add Subject</button>
             </form>
           </div>
 
           {/* Live Sessions */}
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Live Sessions</h2>
+          <div className="content-card">
+            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+              <Clock className="h-4 w-4 text-primary" />
+              Live Sessions
+            </h2>
             {liveSessions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <Clock className="h-10 w-10 mb-3 opacity-50" />
-                <p>No active sessions currently.</p>
+                <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <p className="text-sm">No active sessions.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-muted-foreground border-b border-border">
-                      <th className="text-left py-2">Subject</th>
-                      <th className="text-left py-2">Code</th>
-                      <th className="text-left py-2">End Time</th>
-                      <th className="text-left py-2">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {liveSessions.map((s) => (
-                      <tr key={s.id} className="border-b border-border/30">
-                        <td className="py-3 text-foreground">{s.subject_code}</td>
-                        <td className="py-3 text-foreground font-mono">{s.verification_code}</td>
-                        <td className="py-3 text-foreground">{getRemainingTime(s)}</td>
-                        <td className="py-3">
-                          <button onClick={() => exportToCSV(getSessionAttendance(s.id), s.subject_code)}
-                            className="flex items-center gap-1 px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">
-                            <FileSpreadsheet className="h-3 w-3" /> Export CSV
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="space-y-3">
+                {liveSessions.map((s) => (
+                  <div key={s.id} className="rounded-2xl border border-border bg-background p-4 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{s.subject_code}</p>
+                      <p className="text-xs text-muted-foreground">Code: <span className="font-mono">{s.verification_code}</span> · {getRemainingTime(s)}</p>
+                    </div>
+                    <button onClick={() => exportToCSV(getSessionAttendance(s.id), s.subject_code)} className="btn-outline text-xs !px-3 !py-1.5 flex items-center gap-1">
+                      <FileSpreadsheet className="h-3 w-3" /> CSV
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
 
           {/* Initiate Session */}
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Initiate Session</h2>
+          <div className="content-card">
+            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+              <Play className="h-4 w-4 text-primary" />
+              Start Session
+            </h2>
             {subjects.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Please create a subject first.</p>
+              <p className="text-muted-foreground text-sm">Create a subject first.</p>
             ) : (
-              <form onSubmit={handleStartSession} className="space-y-4">
+              <form onSubmit={handleStartSession} className="space-y-3">
                 <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Select Subject</label>
-                  <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Subject</label>
+                  <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} className="input-field">
                     <option value="">Select...</option>
                     {subjects.map((s) => (
                       <option key={s.id} value={s.code}>{s.code} ({s.name})</option>
@@ -137,18 +125,15 @@ const TeacherDashboard = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Duration (Minutes)</label>
-                  <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} min="1"
-                    className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Duration (Minutes)</label>
+                  <input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} min="1" className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-sm text-muted-foreground mb-1">Verification Code (8 digits)</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Verification Code (8 digits)</label>
                   <input type="text" placeholder="e.g. 12345678" value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                    className="w-full px-4 py-3 rounded-lg bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 8))} className="input-field" />
                 </div>
-                <button type="submit" disabled={!selectedSubject || verificationCode.length !== 8}
-                  className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50">
+                <button type="submit" disabled={!selectedSubject || verificationCode.length !== 8} className="btn-primary w-full disabled:opacity-40">
                   Start Timer
                 </button>
               </form>
@@ -156,18 +141,20 @@ const TeacherDashboard = () => {
           </div>
 
           {/* Your Subjects */}
-          <div className="glass-card p-6">
-            <h2 className="text-lg font-display font-bold text-foreground mb-4">Your Subjects</h2>
+          <div className="content-card">
+            <h2 className="text-base font-display font-bold text-foreground mb-4">Your Subjects</h2>
             {subjects.length === 0 ? (
               <p className="text-muted-foreground text-sm">No subjects created yet.</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-2">
                 {subjects.map((s) => (
-                  <div key={s.id} className="glass-card p-4">
-                    <h3 className="font-display font-bold text-foreground">{s.name}</h3>
-                    <p className="text-sm text-muted-foreground">{s.code}</p>
+                  <div key={s.id} className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3">
+                    <div>
+                      <p className="font-semibold text-sm text-foreground">{s.name}</p>
+                      <p className="text-xs text-muted-foreground">{s.code}</p>
+                    </div>
                     <button onClick={() => deleteSubject(s.id)}
-                      className="mt-2 flex items-center gap-1 px-2 py-1 rounded text-xs text-destructive border border-destructive/30 hover:bg-destructive/10 transition-colors">
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-destructive hover:bg-destructive/10 transition-colors">
                       <Trash2 className="h-3 w-3" /> Delete
                     </button>
                   </div>
@@ -178,23 +165,25 @@ const TeacherDashboard = () => {
         </div>
 
         {/* Export All */}
-        <div className="glass-card p-6 mt-6">
-          <h2 className="text-lg font-display font-bold text-foreground mb-4">Export All Attendance</h2>
+        <div className="content-card">
+          <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <Download className="h-4 w-4 text-primary" />
+            Export Attendance
+          </h2>
           <div className="flex flex-wrap gap-3">
             {liveSessions.map((s) => (
-              <div key={s.id} className="flex gap-2">
-                <span className="text-sm text-muted-foreground self-center">{s.subject_code}:</span>
-                <button onClick={() => exportToCSV(getSessionAttendance(s.id), s.subject_code)} className="px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">CSV</button>
-                <button onClick={() => exportToExcel(getSessionAttendance(s.id), s.subject_code)} className="px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">Excel</button>
-                <button onClick={() => exportToWord(getSessionAttendance(s.id), s.subject_code)} className="px-3 py-1 rounded border border-border text-xs text-foreground hover:bg-secondary transition-colors">Word</button>
+              <div key={s.id} className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">{s.subject_code}:</span>
+                <button onClick={() => exportToCSV(getSessionAttendance(s.id), s.subject_code)} className="btn-outline text-xs !px-3 !py-1.5">CSV</button>
+                <button onClick={() => exportToExcel(getSessionAttendance(s.id), s.subject_code)} className="btn-outline text-xs !px-3 !py-1.5">Excel</button>
+                <button onClick={() => exportToWord(getSessionAttendance(s.id), s.subject_code)} className="btn-outline text-xs !px-3 !py-1.5">Word</button>
               </div>
             ))}
             {liveSessions.length === 0 && <p className="text-sm text-muted-foreground">Start a session to export attendance data.</p>}
           </div>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

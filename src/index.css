@@ -2,53 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --background: 230 25% 10%;
-    --foreground: 220 20% 95%;
+    --background: 220 20% 95%;
+    --foreground: 220 20% 14%;
 
-    --card: 230 25% 14%;
-    --card-foreground: 220 20% 95%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 14%;
 
-    --popover: 230 25% 14%;
-    --popover-foreground: 220 20% 95%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 14%;
 
-    --primary: 245 58% 58%;
+    --primary: 152 44% 46%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 230 25% 18%;
-    --secondary-foreground: 220 20% 90%;
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 220 20% 25%;
 
-    --muted: 230 20% 20%;
-    --muted-foreground: 220 15% 55%;
+    --muted: 220 14% 92%;
+    --muted-foreground: 220 10% 46%;
 
-    --accent: 245 58% 58%;
+    --accent: 152 44% 46%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 230 20% 22%;
-    --input: 230 20% 18%;
-    --ring: 245 58% 58%;
+    --border: 220 14% 88%;
+    --input: 220 14% 92%;
+    --ring: 152 44% 46%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --sidebar-background: 230 25% 10%;
-    --sidebar-foreground: 220 20% 95%;
-    --sidebar-primary: 245 58% 58%;
+    --sidebar-background: 220 20% 16%;
+    --sidebar-foreground: 220 14% 90%;
+    --sidebar-primary: 152 44% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 230 25% 18%;
-    --sidebar-accent-foreground: 220 20% 90%;
-    --sidebar-border: 230 20% 22%;
-    --sidebar-ring: 245 58% 58%;
+    --sidebar-accent: 220 20% 22%;
+    --sidebar-accent-foreground: 220 14% 90%;
+    --sidebar-border: 220 20% 24%;
+    --sidebar-ring: 152 44% 46%;
 
-    --glass-bg: 230 25% 14%;
-    --glass-border: 230 20% 25%;
-    --gradient-purple: 260 60% 50%;
-    --gradient-pink: 320 60% 45%;
+    --success: 152 55% 42%;
+    --warning: 38 92% 50%;
   }
 }
 
@@ -58,31 +56,29 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'DM Sans', sans-serif;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply rounded-xl border border-border/50 bg-card/80 backdrop-blur-xl;
-    box-shadow: 0 0 30px -10px hsl(var(--primary) / 0.15);
+  .content-card {
+    @apply rounded-2xl border border-border bg-card p-6 shadow-sm;
   }
 
-  .gradient-bg {
-    background: 
-      radial-gradient(ellipse at 20% 50%, hsl(var(--gradient-purple) / 0.15) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, hsl(var(--gradient-pink) / 0.12) 0%, transparent 50%),
-      radial-gradient(ellipse at 60% 20%, hsl(var(--primary) / 0.08) 0%, transparent 40%),
-      hsl(var(--background));
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl bg-background border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all text-sm;
   }
 
-  .gradient-line {
-    height: 2px;
-    background: linear-gradient(90deg, hsl(var(--primary)), hsl(var(--gradient-purple)), hsl(var(--gradient-pink)), transparent);
+  .btn-primary {
+    @apply px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all text-sm shadow-sm;
+  }
+
+  .btn-outline {
+    @apply px-4 py-2 rounded-xl border border-border text-foreground text-sm font-medium hover:bg-muted transition-all;
   }
 }
