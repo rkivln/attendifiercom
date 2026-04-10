@@ -11,6 +11,7 @@ import RegisterPage from "./pages/RegisterPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import NotFound from "./pages/NotFound";
+import JoinClassroom from "./pages/JoinClassroom";
 
 const queryClient = new QueryClient();
 
