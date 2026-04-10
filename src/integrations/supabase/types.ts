@@ -14,11 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          classroom_id: string
+          content: string
+          created_at: string
+          id: string
+          teacher_id: string
+          title: string
+        }
+        Insert: {
+          classroom_id: string
+          content: string
+          created_at?: string
+          id?: string
+          teacher_id: string
+          title: string
+        }
+        Update: {
+          classroom_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          teacher_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attendance_entries: {
         Row: {
           created_at: string
           id: string
           ip_address: string | null
+          is_late: boolean
           session_id: string
           student_id: string
           student_name: string
@@ -28,6 +64,7 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: string | null
+          is_late?: boolean
           session_id: string
           student_id: string
           student_name: string
@@ -37,6 +74,7 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: string | null
+          is_late?: boolean
           session_id?: string
           student_id?: string
           student_name?: string
@@ -51,6 +89,59 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      classroom_members: {
+        Row: {
+          classroom_id: string
+          id: string
+          joined_at: string
+          student_id: string
+        }
+        Insert: {
+          classroom_id: string
+          id?: string
+          joined_at?: string
+          student_id: string
+        }
+        Update: {
+          classroom_id?: string
+          id?: string
+          joined_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classroom_members_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classrooms: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          name: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          name: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          name?: string
+          teacher_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -84,6 +175,7 @@ export type Database = {
           active: boolean
           created_at: string
           duration: number
+          grace_period: number
           id: string
           start_time: string
           subject_code: string
@@ -94,6 +186,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           duration: number
+          grace_period?: number
           id?: string
           start_time?: string
           subject_code: string
@@ -104,6 +197,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           duration?: number
+          grace_period?: number
           id?: string
           start_time?: string
           subject_code?: string
@@ -114,6 +208,7 @@ export type Database = {
       }
       subjects: {
         Row: {
+          classroom_id: string | null
           code: string
           created_at: string
           id: string
@@ -121,6 +216,7 @@ export type Database = {
           teacher_id: string
         }
         Insert: {
+          classroom_id?: string | null
           code: string
           created_at?: string
           id?: string
@@ -128,13 +224,22 @@ export type Database = {
           teacher_id: string
         }
         Update: {
+          classroom_id?: string | null
           code?: string
           created_at?: string
           id?: string
           name?: string
           teacher_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subjects_classroom_id_fkey"
+            columns: ["classroom_id"]
+            isOneToOne: false
+            referencedRelation: "classrooms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

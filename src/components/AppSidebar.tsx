@@ -1,8 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  ClipboardCheck, LayoutDashboard, BookOpen, Clock, BarChart3,
-  LogOut, User,
+  ClipboardCheck, LayoutDashboard, LogOut, User, Users, Megaphone,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -50,7 +49,6 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2">
-        {/* Avatar */}
         <div className="flex flex-col items-center py-6">
           <div className="h-16 w-16 rounded-full bg-sidebar-accent flex items-center justify-center mb-3">
             <User className="h-8 w-8 text-sidebar-foreground/60" />
