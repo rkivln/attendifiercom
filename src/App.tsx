@@ -44,6 +44,7 @@ const App = () => (
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
               <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
+              <Route path="/join/:inviteCode" element={<JoinClassroom />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AttendanceProvider>
