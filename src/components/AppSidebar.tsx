@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  ClipboardCheck, LayoutDashboard, LogOut, User, Users, Megaphone,
+  ClipboardCheck, LayoutDashboard, LogOut, User, Users, Megaphone, BarChart3,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
