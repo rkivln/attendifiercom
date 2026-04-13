@@ -11,6 +11,7 @@ import {
 
 const teacherItems = [
   { title: "Dashboard", url: "/teacher", icon: LayoutDashboard },
+  { title: "Analytics", url: "/teacher/analytics", icon: BarChart3 },
 ];
 
 const studentItems = [

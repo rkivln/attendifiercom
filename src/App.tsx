@@ -12,6 +12,7 @@ import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
 import NotFound from "./pages/NotFound";
 import JoinClassroom from "./pages/JoinClassroom";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/teacher" element={<ProtectedRoute role="teacher"><TeacherDashboard /></ProtectedRoute>} />
+              <Route path="/teacher/analytics" element={<ProtectedRoute role="teacher"><AnalyticsPage /></ProtectedRoute>} />
               <Route path="/student" element={<ProtectedRoute role="student"><StudentDashboard /></ProtectedRoute>} />
               <Route path="/join/:inviteCode" element={<JoinClassroom />} />
               <Route path="*" element={<NotFound />} />
