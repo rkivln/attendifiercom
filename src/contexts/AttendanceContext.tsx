@@ -209,7 +209,10 @@ export const AttendanceProvider = ({ children }: { children: ReactNode }) => {
 
   const createClassroom = async (name: string, teacherId: string): Promise<Classroom | null> => {
     const { data, error } = await supabase.from("classrooms").insert({ name, teacher_id: teacherId }).select().single();
-    if (error) return null;
+    if (error) {
+      console.error("Create classroom error:", error);
+      return null;
+    }
     await fetchAll();
     return data as Classroom;
   };
