@@ -49,6 +49,8 @@ const TeacherDashboard = () => {
     if (classroom) {
       toast.success(`Classroom "${classroom.name}" created!`);
       setClassroomName("");
+    } else {
+      toast.error("Failed to create classroom. Please try again.");
     }
   };
 
