@@ -172,7 +172,7 @@ const StudentDashboard = () => {
           <h2 className="text-base font-bold text-foreground mb-4">Active Sessions</h2>
           {allActiveSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+              <div className="h-12 w-12 rounded-lg frosted-surface flex items-center justify-center mb-3">
                 <Wifi className="h-6 w-6" />
               </div>
               <p className="text-sm">No active sessions right now.</p>
