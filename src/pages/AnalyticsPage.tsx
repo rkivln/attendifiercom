@@ -9,7 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Download, TrendingUp, Users, Clock, BookOpen } from "lucide-react";
 import { exportToCSV, exportToExcel, exportToWord } from "@/lib/exportUtils";
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
+const COLORS = ["#0099ff", "#00cc88", "#ff6b6b", "#ffa726", "#ab47bc"];
 
 const AnalyticsPage = () => {
   const { user } = useAuth();
