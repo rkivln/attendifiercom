@@ -13,12 +13,12 @@ const Navbar = () => {
 
   return (
     <header>
-      <nav className="flex items-center justify-between px-6 py-4 bg-card border-b border-border">
+      <nav className="flex items-center justify-between px-6 py-4 border-b border-border/50">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-primary flex items-center justify-center">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
             <ClipboardCheck className="h-4 w-4 text-primary-foreground" />
           </div>
-          <span className="text-lg font-display font-bold text-foreground">Attendifier</span>
+          <span className="text-lg font-bold text-foreground tracking-tight">Attendifier</span>
         </Link>
         <div className="flex items-center gap-3">
           {user ? (
@@ -32,7 +32,7 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-medium text-foreground hover:text-primary transition-colors">Login</Link>
+              <Link to="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Login</Link>
               <Link to="/register" className="btn-primary text-sm">Register</Link>
             </>
           )}

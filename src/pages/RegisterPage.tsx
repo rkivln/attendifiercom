@@ -27,10 +27,10 @@ const RegisterPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex h-12 w-12 rounded-2xl bg-primary items-center justify-center mb-4">
+          <div className="inline-flex h-12 w-12 rounded-lg bg-primary items-center justify-center mb-4">
             <ClipboardCheck className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Create account</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Create account</h1>
           <p className="text-sm text-muted-foreground mt-1">Join Attendifier today</p>
         </div>
         <div className="content-card">

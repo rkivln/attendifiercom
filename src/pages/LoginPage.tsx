@@ -26,10 +26,10 @@ const LoginPage = () => {
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex h-12 w-12 rounded-2xl bg-primary items-center justify-center mb-4">
+          <div className="inline-flex h-12 w-12 rounded-lg bg-primary items-center justify-center mb-4">
             <ClipboardCheck className="h-6 w-6 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-display font-bold text-foreground">Welcome back</h1>
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">Welcome back</h1>
           <p className="text-sm text-muted-foreground mt-1">Sign in to Attendifier</p>
         </div>
         <div className="content-card">
@@ -44,7 +44,7 @@ const LoginPage = () => {
               <input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required className="input-field" />
             </div>
             <div className="flex items-center gap-2">
-              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="rounded border-border" />
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="rounded border-border accent-primary" />
               <label className="text-sm text-muted-foreground">Remember me</label>
             </div>
             <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-50">
