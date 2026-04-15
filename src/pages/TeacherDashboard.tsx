@@ -101,7 +101,7 @@ const TeacherDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Create Classroom */}
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 tracking-tight">
               <Plus className="h-4 w-4 text-primary" />
               Create Classroom
             </h2>
@@ -117,7 +117,7 @@ const TeacherDashboard = () => {
 
           {/* My Classrooms */}
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 tracking-tight">
               <Users className="h-4 w-4 text-primary" />
               My Classrooms
             </h2>
@@ -129,7 +129,7 @@ const TeacherDashboard = () => {
                   const members = getClassroomMembers(c.id);
                   const isExpanded = expandedClassroom === c.id;
                   return (
-                    <div key={c.id} className="rounded-2xl border border-border bg-background">
+                    <div key={c.id} className="rounded-lg border border-border bg-muted/50">
                       <button
                         onClick={() => setExpandedClassroom(isExpanded ? null : c.id)}
                         className="w-full flex items-center justify-between px-4 py-3"
@@ -183,7 +183,7 @@ const TeacherDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Create Subject */}
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 tracking-tight">
               <BookOpen className="h-4 w-4 text-primary" />
               Create Subject
             </h2>
@@ -211,7 +211,7 @@ const TeacherDashboard = () => {
 
           {/* Start Session */}
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 tracking-tight">
               <Play className="h-4 w-4 text-primary" />
               Start Session
             </h2>
@@ -253,13 +253,13 @@ const TeacherDashboard = () => {
 
         {/* Live Sessions */}
         <div className="content-card">
-          <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 tracking-tight">
             <Clock className="h-4 w-4 text-primary" />
             Live Sessions
           </h2>
           {liveSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+              <div className="h-12 w-12 rounded-lg frosted-surface flex items-center justify-center mb-3">
                 <Clock className="h-6 w-6" />
               </div>
               <p className="text-sm">No active sessions.</p>
@@ -270,10 +270,10 @@ const TeacherDashboard = () => {
                 const attendance = getSessionAttendance(s.id);
                 const lateCount = attendance.filter(a => a.is_late).length;
                 return (
-                  <div key={s.id} className="rounded-2xl border border-border bg-background p-4">
+                  <div key={s.id} className="rounded-lg border border-border bg-muted/50 p-4">
                     <div className="flex items-center justify-between mb-2">
                       <p className="text-sm font-semibold text-foreground">{s.subject_code}</p>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full frosted-surface text-primary text-xs font-medium">
                         {getRemainingTime(s)}
                       </span>
                     </div>
@@ -296,7 +296,7 @@ const TeacherDashboard = () => {
 
         {/* Announcements */}
         <div className="content-card">
-          <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2 tracking-tight">
             <Megaphone className="h-4 w-4 text-primary" />
             Post Announcement
           </h2>
@@ -327,7 +327,7 @@ const TeacherDashboard = () => {
 
         {/* Your Subjects */}
         <div className="content-card">
-          <h2 className="text-base font-display font-bold text-foreground mb-4">Your Subjects</h2>
+          <h2 className="text-base font-bold text-foreground mb-4 tracking-tight">Your Subjects</h2>
           {subjects.length === 0 ? (
             <p className="text-muted-foreground text-sm">No subjects created yet.</p>
           ) : (
@@ -335,7 +335,7 @@ const TeacherDashboard = () => {
               {subjects.map((s) => {
                 const cls = myClassrooms.find(c => c.id === s.classroom_id);
                 return (
-                  <div key={s.id} className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3">
+                  <div key={s.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-4 py-3">
                     <div>
                       <p className="font-semibold text-sm text-foreground">{s.name}</p>
                       <p className="text-xs text-muted-foreground">
