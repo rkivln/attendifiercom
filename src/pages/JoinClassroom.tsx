@@ -58,7 +58,7 @@ const JoinClassroom = () => {
           <ClipboardCheck className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-display font-bold text-foreground">Join Classroom</h1>
+          <h1 className="text-xl font-bold text-foreground">Join Classroom</h1>
           <p className="text-sm text-muted-foreground mt-1">You've been invited to join a classroom.</p>
         </div>
         <div className="text-sm text-muted-foreground">
