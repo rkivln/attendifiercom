@@ -104,7 +104,7 @@ const StudentDashboard = () => {
         {/* Join Classroom + My Classrooms */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
               <Link2 className="h-4 w-4 text-primary" />
               Join Classroom
             </h2>
@@ -120,7 +120,7 @@ const StudentDashboard = () => {
           </div>
 
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
               My Classrooms
             </h2>
@@ -129,7 +129,7 @@ const StudentDashboard = () => {
             ) : (
               <div className="space-y-2">
                 {myClassrooms.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between rounded-2xl border border-border bg-background px-4 py-3">
+                  <div key={c.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-4 py-3">
                     <div>
                       <p className="font-semibold text-sm text-foreground">{c.name}</p>
                       <p className="text-xs text-muted-foreground">{getClassroomSubjects(c.id).length} subject(s)</p>
@@ -148,13 +148,13 @@ const StudentDashboard = () => {
         {/* Announcements */}
         {allAnnouncements.length > 0 && (
           <div className="content-card">
-            <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
               <Megaphone className="h-4 w-4 text-primary" />
               Announcements
             </h2>
             <div className="space-y-3">
               {allAnnouncements.slice(0, 5).map((a) => (
-                <div key={a.id} className="rounded-2xl border border-border bg-background p-4">
+                <div key={a.id} className="rounded-lg border border-border bg-muted/50 p-4">
                   <div className="flex items-center justify-between mb-1">
                     <p className="font-semibold text-sm text-foreground">{a.title}</p>
                     <span className="text-xs text-muted-foreground">{a.classroomName}</span>
@@ -169,7 +169,7 @@ const StudentDashboard = () => {
 
         {/* Active Sessions */}
         <div className="content-card">
-          <h2 className="text-base font-display font-bold text-foreground mb-4">Active Sessions</h2>
+          <h2 className="text-base font-bold text-foreground mb-4">Active Sessions</h2>
           {allActiveSessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <div className="h-12 w-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
@@ -186,7 +186,7 @@ const StudentDashboard = () => {
                 const graceEnd = new Date(s.start_time).getTime() + (s.grace_period || 5) * 60 * 1000;
                 const isPastGrace = Date.now() > graceEnd;
                 return (
-                  <div key={s.id} className="rounded-2xl border border-border bg-background p-5 space-y-3">
+                  <div key={s.id} className="rounded-lg border border-border bg-muted/50 p-5 space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
                         <span className="text-foreground font-semibold text-sm">{label}</span>
@@ -235,7 +235,7 @@ const StudentDashboard = () => {
 
         {/* Stats */}
         <div className="content-card">
-          <h2 className="text-base font-display font-bold text-foreground mb-4 flex items-center gap-2">
+          <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-primary" />
             Attendance Stats
           </h2>
@@ -266,7 +266,7 @@ const StudentDashboard = () => {
         {/* History */}
         <div className="content-card">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-display font-bold text-foreground flex items-center gap-2">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <FileText className="h-4 w-4 text-primary" />
               Attendance History
             </h2>
