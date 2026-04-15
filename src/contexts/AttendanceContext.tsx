@@ -208,9 +208,14 @@ export const AttendanceProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const createClassroom = async (name: string, teacherId: string): Promise<Classroom | null> => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error("Create classroom error: No active session");
+      return null;
+    }
     const { data, error } = await supabase.from("classrooms").insert({ name, teacher_id: teacherId }).select().single();
     if (error) {
-      console.error("Create classroom error:", error);
+      console.error("Create classroom error:", error.message, error.details, error.hint);
       return null;
     }
     await fetchAll();
