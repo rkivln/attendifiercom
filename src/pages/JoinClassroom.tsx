@@ -30,8 +30,10 @@ const JoinClassroom = () => {
 
   const handleJoin = async () => {
     if (!inviteCode || !user) return;
+    // Extract code from URL if full link was used in the route
+    const code = inviteCode.includes("/join/") ? inviteCode.split("/join/").pop()! : inviteCode;
     setJoining(true);
-    const err = await joinClassroom(inviteCode, user.id);
+    const err = await joinClassroom(code, user.id);
     setJoining(false);
     if (err) {
       setError(err);
