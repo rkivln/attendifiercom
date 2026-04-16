@@ -246,7 +246,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_access_classroom: {
+        Args: { _classroom_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_classroom_member: {
+        Args: { _classroom_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_classroom_teacher: {
+        Args: { _classroom_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
