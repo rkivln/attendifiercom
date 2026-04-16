@@ -11,7 +11,7 @@ const StudentDashboard = () => {
   const { user } = useAuth();
   const {
     getActiveSessions, markAttendance, getStudentAttendance,
-    subjects, sessions, getStudentClassrooms, getClassroomAnnouncements,
+    subjects, sessions, classrooms, getStudentClassrooms, getClassroomAnnouncements,
     getClassroomSubjects, joinClassroom, leaveClassroom,
   } = useAttendance();
 
@@ -78,9 +78,18 @@ const StudentDashboard = () => {
     }
   };
 
+  const extractInviteCode = (input: string): string => {
+    const trimmed = input.trim();
+    // Extract code from URL like https://domain/join/CODE
+    const match = trimmed.match(/\/join\/([a-zA-Z0-9]+)\/?$/);
+    if (match) return match[1];
+    return trimmed;
+  };
+
   const handleJoin = async () => {
     if (!inviteCode.trim()) return;
-    const error = await joinClassroom(inviteCode.trim(), user!.id);
+    const code = extractInviteCode(inviteCode);
+    const error = await joinClassroom(code, user!.id);
     if (error) {
       setJoinError(error);
     } else {
@@ -110,13 +119,45 @@ const StudentDashboard = () => {
             </h2>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">Invite Code</label>
-                <input type="text" placeholder="Enter invite code" value={inviteCode}
+                <label className="block text-sm font-medium text-foreground mb-1.5">Invite Code or Link</label>
+                <input type="text" placeholder="Enter invite code or paste invite link" value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value)} className="input-field" />
               </div>
               {joinError && <p className="text-xs text-destructive">{joinError}</p>}
               <button onClick={handleJoin} className="btn-primary w-full">Join</button>
             </div>
+
+            {/* Available Classrooms */}
+            {(() => {
+              const joinedIds = new Set(myClassrooms.map(c => c.id));
+              const available = classrooms.filter(c => !joinedIds.has(c.id));
+              if (available.length === 0) return null;
+              return (
+                <div className="mt-5 pt-4 border-t border-border">
+                  <h3 className="text-sm font-semibold text-foreground mb-3">Available Classrooms</h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {available.map((c) => (
+                      <div key={c.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/50 px-4 py-3">
+                        <div>
+                          <p className="font-semibold text-sm text-foreground">{c.name}</p>
+                          <p className="text-xs text-muted-foreground">Code: <span className="font-mono">{c.invite_code}</span></p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            const err = await joinClassroom(c.invite_code, user!.id);
+                            if (err) toast.error(err);
+                            else toast.success(`Joined ${c.name}!`);
+                          }}
+                          className="btn-primary text-xs !px-3 !py-1.5"
+                        >
+                          Join
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           <div className="content-card">
